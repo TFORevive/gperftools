@@ -82,6 +82,8 @@ extern "C" {
   PERFTOOLS_DLL_DECL const char* tc_version(int* major, int* minor,
                                             const char** patch) PERFTOOLS_NOTHROW;
 
+  PERFTOOLS_DLL_DECL bool tc_isdisabled() PERFTOOLS_NOTHROW;
+
   PERFTOOLS_DLL_DECL void* tc_malloc(size_t size) PERFTOOLS_NOTHROW;
   PERFTOOLS_DLL_DECL void* tc_malloc_skip_new_handler(size_t size) PERFTOOLS_NOTHROW;
   PERFTOOLS_DLL_DECL void tc_free(void* ptr) PERFTOOLS_NOTHROW;

@@ -1129,8 +1129,14 @@ size_t TCMallocImplementation::GetEstimatedAllocatedSize(size_t size) {
 //
 // The destructor prints stats when the program exits.
 static int tcmallocguard_refcount = 0;  // no lock needed: runs before main()
+static bool tcmallocguard_isdisabled = false;
 TCMallocGuard::TCMallocGuard() {
   if (tcmallocguard_refcount++ == 0) {
+    if (strstr(GetCommandLineA(), "-notcmalloc"))
+    {
+        tcmallocguard_isdisabled = true;
+        return;
+    }
     ReplaceSystemAlloc();    // defined in libc_override_*.h
     tc_free(tc_malloc(1));
     ThreadCache::InitTSD();
@@ -1721,6 +1727,10 @@ extern "C" PERFTOOLS_DLL_DECL const char* tc_version(
   if (minor) *minor = TC_VERSION_MINOR;
   if (patch) *patch = TC_VERSION_PATCH;
   return TC_VERSION_STRING;
+}
+
+extern "C" PERFTOOLS_DLL_DECL bool tc_isdisabled() PERFTOOLS_NOTHROW {
+    return tcmallocguard_isdisabled;
 }
 
 // This function behaves similarly to MSVC's _set_new_mode.
