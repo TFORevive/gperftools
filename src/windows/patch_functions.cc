@@ -682,6 +682,13 @@ static SpinLock patch_all_modules_lock(SpinLock::LINKER_INITIALIZED);
 // looking at modules that were added or removed from the last call.
 static std::set<HMODULE> *g_last_loaded;
 
+// NOTE(p0358): This was moved here from the stack of PatchAllModules()
+// function in order to avoid stack overflow crashes that some users
+// have been getting.
+std::vector<ModuleEntryCopy> modules;
+HMODULE hModules[kMaxModules];  // max # of modules we support in one process
+std::set<HMODULE> currently_loaded_modules;
+
 // Iterates over all the modules currently loaded by the executable,
 // according to windows, and makes sure they're all patched.  Most
 // modules will already be in loaded_modules, meaning we have already
@@ -694,12 +701,13 @@ static std::set<HMODULE> *g_last_loaded;
 // false if we were a noop.  May update loaded_modules as well.
 // NOTE: you must hold the patch_all_modules_lock to access loaded_modules.
 bool PatchAllModules() {
-  std::vector<ModuleEntryCopy> modules;
+  //std::vector<ModuleEntryCopy> modules; // moved to heap
+  modules = {};
   bool made_changes = false;
 
   const HANDLE hCurrentProcess = GetCurrentProcess();
   DWORD num_modules = 0;
-  HMODULE hModules[kMaxModules];  // max # of modules we support in one process
+  //HMODULE hModules[kMaxModules];  // max # of modules we support in one process // moved to heap
   if (!::EnumProcessModules(hCurrentProcess, hModules, sizeof(hModules),
                             &num_modules)) {
     num_modules = 0;
@@ -722,7 +730,8 @@ bool PatchAllModules() {
   // removing from hModules all the modules we know we've already
   // patched (or decided don't need to be patched).  At the end,
   // hModules will hold only the modules that we need to consider patching.
-  std::set<HMODULE> currently_loaded_modules;
+  //std::set<HMODULE> currently_loaded_modules; // moved to heap
+  currently_loaded_modules = {};
   {
     SpinLockHolder h(&patch_all_modules_lock);
     if (!g_last_loaded)  g_last_loaded = new std::set<HMODULE>;
