@@ -418,10 +418,10 @@ const char* const LibcInfo::function_name_[] = {
   // at least in msvcrt, nothrow-new machine-code is of a type we
   // can't patch.  Since these are relatively rare, I'm hoping it's ok
   // not to patch them.  (NULL name turns off patching.)
-  NULL,  // kMangledNewNothrow,
-  NULL,  // kMangledNewArrayNothrow,
-  NULL,  // kMangledDeleteNothrow,
-  NULL,  // kMangledDeleteArrayNothrow,
+  kMangledNewNothrow,
+  kMangledNewArrayNothrow,
+  kMangledDeleteNothrow,
+  kMangledDeleteArrayNothrow,
   "_msize", "_expand", "_calloc_crt", "_free_base", "_free_dbg"
 };
 
