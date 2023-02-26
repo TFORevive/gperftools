@@ -418,10 +418,10 @@ const char* const LibcInfo::function_name_[] = {
   // at least in msvcrt, nothrow-new machine-code is of a type we
   // can't patch.  Since these are relatively rare, I'm hoping it's ok
   // not to patch them.  (NULL name turns off patching.)
-  kMangledNewNothrow,
-  kMangledNewArrayNothrow,
-  kMangledDeleteNothrow,
-  kMangledDeleteArrayNothrow,
+  NULL, //kMangledNewNothrow,
+  NULL, //kMangledNewArrayNothrow,
+  NULL, //kMangledDeleteNothrow,
+  NULL, //kMangledDeleteArrayNothrow,
   "_msize", "_expand", "_calloc_crt", "_free_base", "_free_dbg"
 };
 
@@ -693,7 +693,7 @@ static std::set<HMODULE> *g_last_loaded;
 // them.  Returns true if we did any work (patching or invalidating),
 // false if we were a noop.  May update loaded_modules as well.
 // NOTE: you must hold the patch_all_modules_lock to access loaded_modules.
-bool PatchAllModules() {
+extern "C" PERFTOOLS_DLL_DECL bool PatchAllModules() {
   std::vector<ModuleEntryCopy> modules;
   bool made_changes = false;
 
@@ -1019,7 +1019,8 @@ HMODULE WINAPI WindowsInfo::Perftools_LoadLibraryExW(LPCWSTR lpFileName,
                       lpFileName, hFile, dwFlags);
     // This will patch any newly loaded libraries, if patching needs
     // to be done.
-    PatchAllModules();
+    if ((dwFlags & DONT_RESOLVE_DLL_REFERENCES) == 0) // only patch if imports are resolved
+      PatchAllModules();
 
     return rv;
   }
